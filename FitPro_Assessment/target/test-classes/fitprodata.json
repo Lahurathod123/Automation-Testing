@@ -1,0 +1,14 @@
+{
+  "fitpro_xpaths": {
+    "Revenue_Calculator_Page": "//div[contains(text(),'Revenue Calculator')]",
+    "slider_value":"//input[@type='number']",
+    "sliderThumbCss":"span.MuiSlider-thumb",
+    "sliderTrackCss":"span.MuiSlider-track",
+    "inputField":"//input[@type='number']",
+    "checkboxes_CPT_99091":"//span[normalize-space()='57']",
+    "checkboxes_CPT_99453":"//span[normalize-space()='19.19']",
+    "checkboxes_CPT_99454":"//span[normalize-space()='63']",
+    "checkboxes_CPT_99474":"//span[normalize-space()='15']"
+    
+  }
+}

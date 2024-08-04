@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Failed suite [AutomationTestSuite]" guice-stage="DEVELOPMENT">
+  <parameter name="browser" value="chrome"/>
+  <test thread-count="5" name="AutomationTest(failed)">
+    <classes>
+      <class name="com.NadSoftTesting.NadEcomerce">
+        <methods>
+          <include name="preCondition"/>
+          <include name="startup"/>
+          <include name="finish"/>
+        </methods>
+      </class> <!-- com.NadSoftTesting.NadEcomerce -->
+    </classes>
+  </test> <!-- AutomationTest(failed) -->
+</suite> <!-- Failed suite [AutomationTestSuite] -->

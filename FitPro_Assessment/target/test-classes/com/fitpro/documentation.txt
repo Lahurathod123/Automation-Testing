@@ -1,0 +1,183 @@
+FitProAssessment Class Documentation
+
+Package
+com.fitpro
+
+Imports
+
+java.io.IOException
+java.io.InputStream
+java.time.Duration
+java.util.concurrent.TimeUnit
+org.openqa.selenium.By
+org.openqa.selenium.JavascriptExecutor
+org.openqa.selenium.Keys
+org.openqa.selenium.WebDriver
+org.openqa.selenium.WebElement
+org.openqa.selenium.chrome.ChromeDriver
+org.openqa.selenium.chrome.ChromeOptions
+org.openqa.selenium.interactions.Actions
+org.openqa.selenium.support.ui.ExpectedConditions
+org.openqa.selenium.support.ui.WebDriverWait
+org.testng.annotations.AfterClass
+org.testng.annotations.BeforeClass
+org.testng.annotations.Test
+com.fasterxml.jackson.core.JsonProcessingException
+com.fasterxml.jackson.databind.JsonNode
+com.fasterxml.jackson.databind.ObjectMapper
+io.github.bonigarcia.wdm.WebDriverManager
+Class Definition
+
+
+public class FitProAssessment {
+Fields
+
+WebDriver driver: WebDriver instance used for browser interactions.
+Methods
+
+preCondition
+
+java
+Copy code
+@BeforeClass
+public void preCondition() {
+    ChromeOptions options = new ChromeOptions();
+    WebDriverManager.chromedriver().setup();
+    driver = new ChromeDriver(options);
+    options.addArguments("--incognito");
+    driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+    driver.manage().window().maximize();
+    driver.get("https://www.fitpeo.com/");
+}
+Description:
+
+Sets up the Chrome browser with options and initializes the WebDriver instance.
+Configures implicit wait and maximizes the browser window.
+Opens the FitPeo homepage.
+startup
+
+java
+Copy code
+@Test
+public void startup() throws InterruptedException, JsonProcessingException, IOException {
+    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
+    ObjectMapper mapper = new ObjectMapper();
+    InputStream inputStream = FitProAssessment.class.getClassLoader().getResourceAsStream("fitprodata.json");
+
+    JsonNode rootNode = mapper.readTree(inputStream);
+    JsonNode xpathsNode = rootNode.path("fitpro_xpaths");
+
+    // Read XPath values from JSON
+    String Revenue_Calculator_Page = xpathsNode.path("Revenue_Calculator_Page").asText();
+    String slider_value = xpathsNode.path("slider_value").asText();
+    String sliderThumbCss = xpathsNode.path("sliderThumbCss").asText();
+    String sliderTrackCss = xpathsNode.path("sliderTrackCss").asText();
+    String inputField = xpathsNode.path("inputField").asText();
+    String checkboxes_CPT_99091 = xpathsNode.path("checkboxes_CPT_99091").asText();
+    String checkboxes_CPT_99453 = xpathsNode.path("checkboxes_CPT_99453").asText();
+    String checkboxes_CPT_99454 = xpathsNode.path("checkboxes_CPT_99454").asText();
+    String checkboxes_CPT_99474 = xpathsNode.path("checkboxes_CPT_99474").asText();
+
+    // Action Perform
+    try {
+        // Navigate to Revenue Calculator Page
+        driver.findElement(By.xpath(Revenue_Calculator_Page)).click();
+        Thread.sleep(1000);
+        Actions actions = new Actions(driver);
+        actions.sendKeys(Keys.PAGE_DOWN).perform();
+
+        // Adjust the slider to set its value to 820
+        WebElement sliderThumb = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(sliderThumbCss)));
+        WebElement sliderTrack = driver.findElement(By.cssSelector(sliderTrackCss));
+        int trackWidth = sliderTrack.getSize().width;
+        int thumbWidth = sliderThumb.getSize().width;
+        int desiredValue = 820;
+        int minValue = 0;
+        int maxValue = 244;
+        double valuePercentage = (double) (desiredValue - minValue) / (maxValue - minValue);
+        int offset = (int) (trackWidth * valuePercentage) - (thumbWidth / 2);
+
+        // Use Actions class to click and drag the slider thumb to the desired value
+        actions.clickAndHold(sliderThumb).moveByOffset(offset, 0).release().perform();
+        Thread.sleep(3000);
+
+        // Enter value 820 in the text field
+        int numberInputFields = 820;
+        driver.findElement(By.xpath(inputField)).sendKeys(String.valueOf(numberInputFields));
+
+        // Enter value 560 and trigger change events
+        WebElement numberInputField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(slider_value)));
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        js.executeScript("arguments[0].value = '560';", numberInputField);
+        js.executeScript("var event = new Event('input', { bubbles: true, cancelable: true }); arguments[0].dispatchEvent(event);", numberInputField);
+        js.executeScript("var event = new Event('change', { bubbles: true, cancelable: true }); arguments[0].dispatchEvent(event);", numberInputField);
+        js.executeScript("var event = new Event('blur', { bubbles: true, cancelable: true }); arguments[0].dispatchEvent(event);", numberInputField);
+
+        // Verify updated values
+        wait.until(ExpectedConditions.textToBePresentInElementValue(numberInputField, "560"));
+        String newValue = numberInputField.getAttribute("value");
+        System.out.println("New value set: " + newValue);
+
+        actions.sendKeys(Keys.PAGE_DOWN).perform();
+        Thread.sleep(1000);
+
+        // Scroll down and select checkboxes
+        driver.findElement(By.xpath(checkboxes_CPT_99091)).click();
+        driver.findElement(By.xpath(checkboxes_CPT_99453)).click();
+        driver.findElement(By.xpath(checkboxes_CPT_99454)).click();
+        driver.findElement(By.xpath(checkboxes_CPT_99474)).click();
+
+        Thread.sleep(10000);
+    } catch (Exception e) {
+        System.out.println("Exception occurred while setting value with JavaScript.");
+        e.printStackTrace();
+    }
+}
+Description:
+
+Reads configuration data from a JSON file.
+Performs operations such as navigating to a page, adjusting a slider, entering values, and interacting with checkboxes.
+Uses JavaScript to trigger input events and ensure the page reflects the changes.
+finish
+
+java
+Copy code
+@AfterClass
+public void finish() throws InterruptedException {
+    Thread.sleep(1000);
+    if (driver != null) {
+        driver.close();
+    }
+}
+Description:
+
+Waits for a short period and then closes the browser window.
+Ensures the WebDriver instance is properly terminated.
+Dependencies
+
+Selenium WebDriver: For browser automation.
+WebDriverManager: For managing WebDriver binaries.
+Jackson: For parsing JSON data.
+TestNG: For structuring and running tests.
+Notes
+
+Ensure that the fitprodata.json file is correctly formatted and placed in the resources directory.
+Adjust XPath and CSS selectors according to the actual web page structure.
+The code assumes that the FitPeo homepage and elements are available and accessible.
+
+
+
+
+
+
+
+
+This text documentation provides an overview of the FitProAssessment class, including its fields, methods, and the purpose of each operation.
+
+
+
+
+
+
+
+
